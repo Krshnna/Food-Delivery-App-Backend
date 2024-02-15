@@ -44,13 +44,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    address: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Address",
+    },
     refreshToken: {
       type: String,
     },
   },
   { timestamps: true }
 );
-
 
 userSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
