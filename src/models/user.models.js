@@ -31,22 +31,17 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
     avatar: {
-      public_id: {
-        type: String,
-        required: [true, "Public Id is required."],
-      },
-      url: {
-        type: String,
-        required: [true, "Url is required."],
-      },
+      type: String,
+      required: [true, "Public Id is required."],
     },
     phone: {
       type: String,
       required: true,
     },
-    address: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Address",
+    role: {
+      type: String,
+      enum: ["admin", "user"],
+      default: "user",
     },
     refreshToken: {
       type: String,
