@@ -1,0 +1,3 @@
+Hi, this is another project on node js, where I am trying to write backend of food delivery app. It's not just complete backend, but contain main schemas likes User, food, rating, reviews etc and also have some functions related with them.
+
+I did data modelling first, using (eraser.io)[https://app.eraser.io/all]. Here is the link of (data model)[https://app.eraser.io/workspace/7oObyVAIlv4qFUVGBrxs?elements=fVQPiHfOP-goeyPlm5R5kg]
