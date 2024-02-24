@@ -1,6 +1,10 @@
 import express from "express";
 import isAuthenticated from "../middlewares/auth.middlewares.js";
-import { loginUser, registerUser } from "../controllers/user.controllers.js";
+import {
+  loginUser,
+  logoutUser,
+  registerUser,
+} from "../controllers/user.controllers.js";
 import { upload } from "../middlewares/multer.middlewares.js";
 import { registerSchemaValidation } from "../utils/validation.js";
 import { validateSchema } from "../middlewares/validate.middlewares.js";
@@ -16,6 +20,6 @@ router
   );
 
 router.route("/login").post(loginUser);
-
+router.route("/logout").post(isAuthenticated, logoutUser);
 
 export default router;
