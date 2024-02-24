@@ -14,6 +14,8 @@ router
     validateSchema(registerSchemaValidation),
     registerUser
   );
+
 router.route("/login").post(loginUser);
+
 
 export default router;

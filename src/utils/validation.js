@@ -1,4 +1,5 @@
 import { z } from "zod";
+import asyncHandler from "./asyncHandler.js";
 
 const registerSchemaValidation = z.object({
   fullName: z
@@ -33,6 +34,22 @@ const registerSchemaValidation = z.object({
     .min(10),
 });
 
+const loginValidateSchema = z
+  .object({
+    userNameOrEmail: z.string().min(1),
+  })
+  .or(
+    z.object({
+      userNameOrEmail: z
+        .string()
+        .email()
+        .refine((value) => {
+          value.endsWith("@gmail.com"),
+            {
+              message: "Enter a valid email address!!!",
+            };
+        }),
+    })
+  );
 
-
-export { registerSchemaValidation };
+export { registerSchemaValidation, loginValidateSchema };
