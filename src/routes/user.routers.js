@@ -4,6 +4,7 @@ import {
   loginUser,
   logoutUser,
   registerUser,
+  renewRefreshToken,
 } from "../controllers/user.controllers.js";
 import { upload } from "../middlewares/multer.middlewares.js";
 import { registerSchemaValidation } from "../utils/validation.js";
@@ -21,5 +22,6 @@ router
 
 router.route("/login").post(loginUser);
 router.route("/logout").post(isAuthenticated, logoutUser);
+router.route("/refresh-token").post(isAuthenticated, renewRefreshToken);
 
 export default router;
