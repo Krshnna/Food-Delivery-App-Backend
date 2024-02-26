@@ -1,27 +1,32 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import dotenv from "dotenv";
+dotenv.config();
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINART_API_SECRET,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadImage = async (localPath) => {
+const uploadImageOnCloudinary = async (
+  localFilePath,
+  resource_type = "image"
+) => {
   try {
-    if (!localPath) return null;
-    const response = await cloudinary.uploader.upload(localPath, {
-      resource_type: "auto",
+    if (!localFilePath) return null;
+    const response = await cloudinary.uploader.upload(localFilePath, {
+      resource_type,
     });
-    fs.unlinkSync(localPath);
+    fs.unlinkSync(localFilePath);
     return response;
   } catch (error) {
-    fs.unlinkSync(localPath);
+    fs.unlinkSync(localFilePath);
     return null;
   }
 };
 
-const deleteImage = async (public_id, resource_type = "image") => {
+const deleteImageOnCloudinary = async (public_id, resource_type = "image") => {
   try {
     if (!public_id) return null;
     const response = await cloudinary.uploader.destroy(public_id, {
@@ -32,3 +37,5 @@ const deleteImage = async (public_id, resource_type = "image") => {
     return null;
   }
 };
+
+export { uploadImageOnCloudinary, deleteImageOnCloudinary };
