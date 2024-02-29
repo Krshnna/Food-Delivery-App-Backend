@@ -5,6 +5,8 @@ import {
   logoutUser,
   registerUser,
   renewRefreshToken,
+  updateAvatar,
+  updateDetails,
 } from "../controllers/user.controllers.js";
 import { upload } from "../middlewares/multer.middlewares.js";
 import { registerSchemaValidation } from "../utils/validation.js";
@@ -19,9 +21,10 @@ router
     validateSchema(registerSchemaValidation),
     registerUser
   );
-
 router.route("/login").post(loginUser);
 router.route("/logout").post(isAuthenticated, logoutUser);
 router.route("/refresh-token").post(isAuthenticated, renewRefreshToken);
+router.route("/update-details").patch(isAuthenticated, updateDetails);
+router.route("/update-avatar").patch(isAuthenticated, updateAvatar);
 
 export default router;

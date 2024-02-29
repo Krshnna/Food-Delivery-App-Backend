@@ -3,7 +3,10 @@ import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import { User } from "../models/user.models.js";
-import { uploadImageOnCloudinary } from "../utils/cloudinary.js";
+import {
+  deleteImageOnCloudinary,
+  uploadImageOnCloudinary,
+} from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 
 const generateAccessAndRefreshToken = async (userId) => {
@@ -136,33 +139,121 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(400, {}, "Logout SuccessFully!!!"));
 });
 
-const renewRefreshToken = asyncHandler(async(req, res) => {
-  const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
-  if(!incomingRefreshToken) {
+const renewRefreshToken = asyncHandler(async (req, res) => {
+  const incomingRefreshToken =
+    req.cookies.refreshToken || req.body.refreshToken;
+  if (!incomingRefreshToken) {
     throw new ApiError(401, "Unauthorized request");
   }
 
-  const decoded = await jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+  const decoded = await jwt.verify(
+    incomingRefreshToken,
+    process.env.REFRESH_TOKEN_SECRET
+  );
   const user = await User.findById(decoded?._id);
-  if(!user) {
+  if (!user) {
     throw new ApiError(400, "Invalid Refresh Token!!!");
   }
-  if(incomingRefreshToken !== user.refreshToken) {
+  if (incomingRefreshToken !== user.refreshToken) {
     throw new ApiError(400, "Refresh Token is used or invalid!!!");
   }
 
   //Generate a new access token
-  const {accessToken, refreshToken} = await generateAccessAndRefreshToken(user._id);
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    user._id
+  );
   const options = {
     httpOnly: true,
     secure: true,
+  };
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        { accessToken, refreshToken },
+        "Access Token refreshed!!!"
+      )
+    );
+});
+
+const updateDetails = asyncHandler(async (req, res) => {
+  const { fullName, phone, userName, email } = req.body;
+  const details = {};
+
+  if (
+    [fullName, phone, userName, email].some((fields) => fields?.trim() === "")
+  ) {
+    throw new ApiError(400, "Atleast one field is required!!!");
   }
 
-  return res.status(200)
-  .cookie("accessToken", accessToken, options)
-  .cookie("refreshToken", refreshToken, options)
-  .json(new ApiResponse(200, {accessToken, refreshToken}, "Access Token refreshed!!!"))
+  if (fullName) details.fullName = fullName;
+  if (phone) details.phone = phone;
+  if (userName) details.userName = userName.toLowerCase();
+  if (email) details.email = email;
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: details,
+    },
+    {
+      new: true,
+    }
+  ).select("-password -refreshToken");
 
-})
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Details Updated SuccessFully!!!"));
+});
 
-export { registerUser, loginUser, logoutUser, renewRefreshToken };
+const updateAvatar = asyncHandler(async (req, res) => {
+  const avatarFile = req.file?.path;
+  if (!avatarFile) {
+    throw new ApiError(400, "Image is required!!!");
+  }
+  const avatar = await uploadImageOnCloudinary(avatarFile);
+  if (!avatar) {
+    throw new ApiError(400, "Error while uploading on cloudinary!!!");
+  }
+  const oldAvatar = req.user.avatar;
+  const deleteOldUrl = await deleteImageOnCloudinary(oldAvatar);
+  if (!deleteOldUrl) {
+    throw new ApiError(400, "Error while deleting from cloudinary");
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: {
+        avatar: avatar.url,
+      },
+    },
+    {
+      new: true,
+    }
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Avatar Updated SuccessFully!!!"));
+});
+
+const getCurrentUser = asyncHandler(async (req, res) => {
+  return res
+    .status(200)
+    .json(new ApiResponse(200, req.user, "User Fetched SuccessFully!!!"));
+});
+
+export {
+  generateAccessAndRefreshToken,
+  registerUser,
+  loginUser,
+  logoutUser,
+  renewRefreshToken,
+  updateDetails,
+  updateAvatar,
+  getCurrentUser,
+};
