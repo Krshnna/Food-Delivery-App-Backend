@@ -20,8 +20,10 @@ app.use(cookieParser());
 
 import userRouters from "./routes/user.routers.js";
 import addressRouters from "./routes/address.routers.js";
+import categoryRouters from "./routes/category.routers.js";
 
 app.use("/api/v1/users", userRouters);
 app.use("/api/v1/addresses", addressRouters);
+app.use("/api/v1/categories", categoryRouters);
 
 export default app;
